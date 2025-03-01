@@ -1,0 +1,79 @@
+.replace-link-container {
+  padding: 20px;
+  background: #fff;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .url-display {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f5f5f5;
+    border-radius: 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h2 {
+      color: #333;
+      font-size: 16px;
+      margin: 0;
+      word-break: break-all;
+      cursor: pointer;
+    }
+  }
+  .form-footer {
+    display: flex;
+    margin-top: 48px;
+    justify-content: right;
+  }
+  .query-params-display {
+    padding-left: 16px;
+
+    .params-list {
+      width: 100%;
+      .param-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .param-label {
+          width: 16.66%; // 相当于 span={4}
+          padding-right: 8px;
+          text-align: right;
+          color: rgba(0, 0, 0, 0.88);
+          font-weight: 500;
+        }
+
+        .param-input-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+    }
+
+    .submit-button {
+      margin-top: 24px;
+    }
+
+    .key-input-wrapper {
+      padding-right: 10px;
+    }
+
+    .value-input {
+      width: 300px;
+    }
+
+    .add-param-btn {
+      margin-left: 10px;
+    }
+
+    h3 {
+      &:hover {
+        color: #722ed1; // 更新悬停颜色
+      }
+    }
+  }
+}
