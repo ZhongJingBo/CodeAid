@@ -30,6 +30,8 @@ export default defineConfig({
     alias: {  
       '@': path.resolve(__dirname, 'src'),  
       '@components': path.resolve(__dirname, 'src/components'),  
+      '@utils': path.resolve(__dirname, 'src/utils'),  
+      '@hooks':path.resolve(__dirname, 'src/hooks'),  
     },  
   }, 
   server: {
@@ -49,8 +51,16 @@ export default defineConfig({
   build: {  
     watch: {}, // 启用 watch 模式
     rollupOptions: {  
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        background: path.resolve(__dirname, 'src/background/requestForward.js')
+      },
       output: {  
-        entryFileNames: 'assets/js/[name].js',  
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'background' 
+            ? 'background/requestForward.js'
+            : 'assets/js/[name].js';
+        },
         chunkFileNames: 'assets/js/[name].js',  
         assetFileNames: 'assets/[name].[ext]',  
       }  
@@ -60,6 +70,3 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
   },
 });
-
-
-

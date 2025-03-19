@@ -19,5 +19,14 @@
     "default_popup": "index.html"
   },
 
-  "permissions": ["sidePanel" ,"tabs"]
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+
 }
