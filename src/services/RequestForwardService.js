@@ -71,55 +71,43 @@ class RequestForwardService {
   static async initChromeRules() {
     const result = [];
     const storeRules = await chrome.storage.local.get("forwardRules");
-    const { forwardRules } = storeRules || {}
+    const { forwardRules } = storeRules || {};
     const customEvent = new CustomEvent("chromeRules-update", {
       detail: { ruleCount: result?.length },
-    }); 
+    });
 
     for (let key in forwardRules) {
       if (forwardRules[key].groupEnabled && forwardRules[key].rule) {
         result.push(...forwardRules[key].rule);
       }
     }
- 
+
     document.dispatchEvent(customEvent);
     await this.updateChromeRules(result);
   }
 
+  // 取消所有代理规则
+  static async removeAllRules() {
+    try {
+      // 获取所有现有规则
+      const existingRules =
+        await chrome.declarativeNetRequest.getDynamicRules();
+      const existingRuleIds = existingRules.map((rule) => rule.id);
 
-
-    // 取消所有代理规则
-    static async removeAllRules() {
-      try {
-        // 获取所有现有规则
-        const existingRules =
-          await chrome.declarativeNetRequest.getDynamicRules();
-        const existingRuleIds = existingRules.map((rule) => rule.id);
-  
-        // 移除所有规则
-        if (existingRuleIds.length > 0) {
-          await chrome.declarativeNetRequest.updateDynamicRules({
-            removeRuleIds: existingRuleIds,
-            addRules: [],
-          });
-          console.log("All proxy rules removed successfully");
-        }
-        return true;
-      } catch (error) {
-        console.error("Failed to remove all rules:", error);
-        return false;
+      // 移除所有规则
+      if (existingRuleIds.length > 0) {
+        await chrome.declarativeNetRequest.updateDynamicRules({
+          removeRuleIds: existingRuleIds,
+          addRules: [],
+        });
+        console.log("All proxy rules removed successfully");
       }
+      return true;
+    } catch (error) {
+      console.error("Failed to remove all rules:", error);
+      return false;
     }
-
-
-
-  
-
-
-
-
-
-
+  }
 }
 
 export default RequestForwardService;
