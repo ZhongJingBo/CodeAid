@@ -8,9 +8,11 @@ import {
   updateData,
   initData,
   deleteData,
+  editorUpdateData,
 } from "./service";
 import "./index.less";
 import { isExtensionEnvironment } from "@utils/environment.js";
+import { message } from "antd";
 // 初始化数据
 initData();
 
@@ -38,13 +40,19 @@ const RequestForward = () => {
         rule: value.rule,
         children: (
           <Proxy
+            key={`${value.key}-${Date.now()}`}
             group={value.key}
             type={value.key}
             rule={value.rule}
+            jsonc={value.jsonc}
             groupEnabled={value.groupEnabled}
             updateData={(data) => {
               proxyUpdata(data, items);
             }}
+            editorUpdata={(transformedRules, jsoncData, group) => {
+              editorUpdata(transformedRules, jsoncData, group, items);
+            }}
+            loadData={loadData}
           />
         ),
       };
@@ -72,7 +80,6 @@ const RequestForward = () => {
 
     setItems(newItems);
     updateData(data);
-    // 更新items
   };
 
   // 切换当前tab启用状态
@@ -92,10 +99,34 @@ const RequestForward = () => {
           key: targetItem.key,
           label: targetItem.key,
           rule: targetItem.rule,
+          jsonc: targetItem.jsonc, // 添加jsonc
           groupEnabled: newEnabledState,
         },
       };
       updateData(updatedData);
+    }
+  };
+
+  const editorUpdata = async (transformedRules, jsoncData, group, items) => {
+    try {
+      // 等待更新存储完成
+      await editorUpdateData({ rule: transformedRules, jsonc: jsoncData }, group);
+
+      // 更新 items
+      const newItems = items.map(item => 
+        item.key === group 
+          ? { 
+              ...item, 
+              rule: transformedRules,
+              jsonc: jsoncData  // 同时更新 jsonc
+            }
+          : item
+      );
+      setItems(newItems);
+    } catch (error) {
+      console.error('编辑器更新失败:', error);
+      // 可以添加错误提示
+      message.error('更新失败，请重试');
     }
   };
 
@@ -111,11 +142,14 @@ const RequestForward = () => {
         rule: [],
         children: (
           <Proxy
+            key={`${value}-${Date.now()}`}
             group={value}
             type={value}
             rule={[]}
             groupEnabled={true}
             updateData={updateData}
+            editorUpdata={editorUpdata}
+            loadData={loadData}
           />
         ),
       };

@@ -20,7 +20,7 @@ const SideBar = () => {
   const [ruleCount, setRuleCount] = useState("");
 
   useEffect(() => {
-    chrome.declarativeNetRequest.getDynamicRules().then((res) => {
+    chrome.declarativeNetRequest?.getDynamicRules().then((res) => {
       setRuleCount(res?.length || 0);
     });
 
@@ -35,6 +35,11 @@ const SideBar = () => {
       key: "/request-forward",
       icon: <ApiOutlined />,
       label: "代理",
+    },
+    {
+      key: "/test",
+      icon: <ApiOutlined />,
+      label: "test",
     },
   ];
 

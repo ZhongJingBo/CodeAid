@@ -10,12 +10,22 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { trimObjectValues } from "@/utils/environment";
+import { FORWARD_RULE_KEY } from "../../../../constants";
+import Editor from "../editor";
+import {
+  formatJSONString,
+  stripJSONComments,
+  cleanJSON,
+  validateAndTransformRules,
+} from "@/utils";
 const Proxy = (props) => {
-  const { group, type, rule, updateData, groupEnabled } = props;
+  const { group, type, rule, updateData, groupEnabled, jsonc, editorUpdata, loadData } =
+    props;
   const [forwardRules, setForwardRules] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [inputData, setInputData] = useState({});
+  const [showEditor, setShowEditor] = useState(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -28,16 +38,15 @@ const Proxy = (props) => {
   };
 
   //获取代理规则
-  const loadForwardRules = () => {
+  const loadForwardRules = async () => {
     setForwardRules(rule);
   };
 
   // 保存规则到 storage
   const saveRulesToStorage = async (rules) => {
-    const result = await chrome.storage.local.get("forwardRules");
-    const { forwardRules } = result;
-    const rulesObject = {               
-       
+    const result = await chrome.storage.local.get(FORWARD_RULE_KEY);
+    const { [FORWARD_RULE_KEY]: forwardRules } = result;
+    const rulesObject = {
       [group]: {
         key: group,
         group: group,
@@ -110,6 +119,15 @@ const Proxy = (props) => {
       ...record,
       [key]: value,
     });
+  };
+
+  const editorChange = (value) => {
+    const cleanValue = formatJSONString(stripJSONComments(value));
+    const jsonData = JSON.parse(cleanJSON(cleanValue));
+    const transformedRules = validateAndTransformRules(jsonData.proxy);
+
+    // 可以直接保存的数据 transformedRules
+    editorUpdata(transformedRules, value, group);
   };
 
   const columns = [
@@ -217,27 +235,47 @@ const Proxy = (props) => {
     }
   };
 
+  const handleSwitch = async () => {
+    // 切换视图
+    setShowEditor(!showEditor);
+    // 重新加载数据
+    if(showEditor){
+      await loadData();
+    }
+  
+  };
+
   return (
     <div className="request-forward-container">
       <div className="header">
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setEditingRule(null);
-            form.resetFields();
-            setModalVisible(true);
-          }}
-        >
-          添加规则
+        {!showEditor ? (
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingRule(null);
+              form.resetFields();
+              setModalVisible(true);
+            }}
+          >
+            添加规则
+          </Button>
+        ) : null}
+
+        <Button type="primary" onClick={handleSwitch}>
+          切换
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={forwardRules}
-        rowKey="id"
-        pagination={false}
-      />
+
+      {showEditor ? (
+        <Editor jsonc={jsonc} onChange={editorChange} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={forwardRules}
+          rowKey="id"
+          pagination={false}
+        />
+      )}
 
       <Modal
         title={editingRule ? "编辑转发规则" : "添加转发规则"}
@@ -274,12 +312,3 @@ const Proxy = (props) => {
 };
 
 export default Proxy;
-
-/**
- * UI <===> 富文本可以相互转换 提供一些辅助功能  比如 正则提示等等....
- * action:
- * 1. storage数据自上而下传递
- * 2. tab也根据storage数据进行初始化
- * 3. mock数据
- * 4. 数据源统一管理 通过callback的方式 由外层管理
- */

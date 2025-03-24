@@ -1,3 +1,5 @@
+import { FORWARD_RULE_KEY } from '../constants';
+
 class RequestForwardService {
   static transformToDeclarativeRules(forwardRules) {
     return forwardRules
@@ -32,7 +34,7 @@ class RequestForwardService {
     try {
       // 获取现有规则
       const existingRules =
-        await chrome.declarativeNetRequest.getDynamicRules();
+        await chrome.declarativeNetRequest?.getDynamicRules();
 
       const existingRuleIds = existingRules.map((rule) => rule.id);
       // 转换新规则
@@ -59,7 +61,7 @@ class RequestForwardService {
   // 获取当前规则数量
   static async getRulesCount() {
     try {
-      const rules = await chrome.declarativeNetRequest.getDynamicRules();
+      const rules = await chrome.declarativeNetRequest?.getDynamicRules();
       return rules.length;
     } catch (error) {
       console.error("Failed to get rules count:", error);
@@ -70,8 +72,8 @@ class RequestForwardService {
   // 初始化所有规则
   static async initChromeRules() {
     const result = [];
-    const storeRules = await chrome.storage.local.get("forwardRules");
-    const { forwardRules } = storeRules || {};
+    const storeRules = await chrome.storage.local.get(FORWARD_RULE_KEY);
+    const { [FORWARD_RULE_KEY]: forwardRules } = storeRules || {};
     const customEvent = new CustomEvent("chromeRules-update", {
       detail: { ruleCount: result?.length },
     });
@@ -83,6 +85,7 @@ class RequestForwardService {
     }
 
     document.dispatchEvent(customEvent);
+    console.log(result ,'result')
     await this.updateChromeRules(result);
   }
 

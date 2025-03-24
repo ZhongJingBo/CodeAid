@@ -1,3 +1,5 @@
+import { FORWARD_RULE_KEY } from '../constants';
+
 // 使用 declarativeNetRequest 替代 webRequest
 
 
@@ -12,9 +14,9 @@ chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((e) => {
 });
 
 
-async function updateRules() {
-  const rules = await chrome.storage.local.get(['forwardRules']);
-  const forwardRules = rules.forwardRules || [];
+const updateRules = async () => {
+  const rules = await chrome.storage.local.get([FORWARD_RULE_KEY]);
+  const forwardRules = rules[FORWARD_RULE_KEY] || [];
   
   // 转换规则格式
   const declarativeRules = forwardRules
@@ -43,7 +45,7 @@ async function updateRules() {
 
 // 监听存储变化
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'local' && changes.forwardRules) {
+  if (namespace === 'local' && changes[FORWARD_RULE_KEY]) {
     updateRules();
   }
 });

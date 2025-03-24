@@ -1,0 +1,2 @@
+export const FORWARD_RULE_KEY = "code_aid_forward_rules";
+
